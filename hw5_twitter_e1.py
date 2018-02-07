@@ -120,11 +120,11 @@ def find_common_freqDist(tokenizedList1, tokenizedList2):
     for token in list1:
         if token not in stop_words and token.isalpha():
             if token in list2:
-                freq_common_dist1[token] += 1
+                freq_common_dist1[token.lower()] += 1
     for token in list2:
         if token not in stop_words and token.isalpha():
             if token in list1:
-                freq_common_dist2[token] += 1
+                freq_common_dist2[token.lower()] += 1
     return freq_common_dist1, freq_common_dist2
 
 def find_dif_freqDist(tokenizedList1, tokenizedList2):
@@ -136,11 +136,11 @@ def find_dif_freqDist(tokenizedList1, tokenizedList2):
     for token in list1:
         if token not in stop_words and token.isalpha():
             if token not in list2:
-                freq_dif_dist1[token] += 1
+                freq_dif_dist1[token.lower()] += 1
     for token in list2:
         if token not in stop_words and token.isalpha():
             if token not in list1:
-                freq_dif_dist2[token] += 1
+                freq_dif_dist2[token.lower()] += 1
     return freq_dif_dist1, freq_dif_dist2
 
 
