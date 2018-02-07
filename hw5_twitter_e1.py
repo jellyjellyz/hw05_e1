@@ -11,8 +11,8 @@ import nltk # uncomment line after you install nltk
 ## Any names of people you worked with on this assignment:
 
 #usage should be python3 hw5_twitter.py <username> <num_tweets>
-username = sys.argv[1]
-num_tweets = sys.argv[2]
+# username = sys.argv[1]
+# num_tweets = sys.argv[2]
 
 consumer_key = secret_data.CONSUMER_KEY
 consumer_secret = secret_data.CONSUMER_SECRET
@@ -85,7 +85,7 @@ def get_text_list(tweet_dict_list):
             atweet.append(adict['text'])
     return atweet
 
-def get_tweet(username, count, auth):
+def get_tweet(username, num_tweets, auth):
     base_url = 'https://api.twitter.com/1.1/statuses/user_timeline.json'
     params = {'screen_name': username, 'count': num_tweets}
     return make_request_using_cache(base_url, params, auth, username)
@@ -105,7 +105,43 @@ def filted_freqDist(tokenizedList):
                 freq_dist[token] += 1
     return freq_dist
 
+def join_tokenized_list(tokenizedList):
+    thelist = []
+    for alist in tokenizedList:
+        thelist.extend(alist)
+    return thelist
 
+def find_common_freqDist(tokenizedList1, tokenizedList2):
+    list1 = join_tokenized_list(tokenizedList1)
+    list2 = join_tokenized_list(tokenizedList2)
+    stop_words = nltk.corpus.stopwords.words("english") + ["http", "https", "RT" ]
+    freq_common_dist1 = nltk.FreqDist()
+    freq_common_dist2 = nltk.FreqDist()
+    for token in list1:
+        if token not in stop_words and token.isalpha():
+            if token in list2:
+                freq_common_dist1[token] += 1
+    for token in list2:
+        if token not in stop_words and token.isalpha():
+            if token in list1:
+                freq_common_dist2[token] += 1
+    return freq_common_dist1, freq_common_dist2
+
+def find_dif_freqDist(tokenizedList1, tokenizedList2):
+    list1 = join_tokenized_list(tokenizedList1)
+    list2 = join_tokenized_list(tokenizedList2)
+    stop_words = nltk.corpus.stopwords.words("english") + ["http", "https", "RT" ]
+    freq_dif_dist1 = nltk.FreqDist()
+    freq_dif_dist2 = nltk.FreqDist()
+    for token in list1:
+        if token not in stop_words and token.isalpha():
+            if token not in list2:
+                freq_dif_dist1[token] += 1
+    for token in list2:
+        if token not in stop_words and token.isalpha():
+            if token not in list1:
+                freq_dif_dist2[token] += 1
+    return freq_dif_dist1, freq_dif_dist2
 
 
 if __name__ == "__main__":
@@ -116,19 +152,46 @@ if __name__ == "__main__":
         print("You need to fill in this API's specific OAuth URLs in this file.")
         exit()
 
-    print('----------**Result for Extra 2**----------')
-
+    print('----------**Result for Extra 1**----------')
+    (username1, num_tweets1) = input("Please type in the first username you want to compare, and the number of tweets you want to search(with a comma in between): ").split(",")
+    (username2, num_tweets2) = input("Please type in the second username you want to compare, and the number of tweets you want to search(with a comma in between): ").split(",")
+    
+    
+    
     # base_url_part2 = 'https://api.twitter.com/1.1/statuses/user_timeline.json'
     # response_part2 = requests.get(base_url_part2, {'screen_name': username, 'count': num_tweets}, auth = auth).text
     # tweetDictList_part2 = json.loads(response_part2)
     # print(params_unique_combination(username, get_tweet_id(tweetDictList_part2)))
     try:
-        tweet_whole_dictList = get_tweet(username, num_tweets, auth)
+        tweet_whole_dictList1 = get_tweet(username1, num_tweets1, auth)
     except:
-        print('Oops! Invalid username! Please try a different one. :)')
+        print('Oops! Invalid username1! Please try a different one. :)')
         quit()
-    tweet_text_list = get_text_list(tweet_whole_dictList)
-    if tweet_text_list != []:
-        tokenized_list = tweet_token(tweet_text_list)
-        print(filted_freqDist(tokenized_list).most_common(5))
+
+    try:
+        tweet_whole_dictList2 = get_tweet(username2, num_tweets2, auth)
+    except:
+        print('Oops! Invalid username2! Please try a different one. :)')
+        quit()
+
+    tweet_text_list1 = get_text_list(tweet_whole_dictList1)
+    if tweet_text_list1 != []:
+        tokenized_list1 = tweet_token(tweet_text_list1)
+
+    tweet_text_list2 = get_text_list(tweet_whole_dictList2)
+    if tweet_text_list2 != []:
+        tokenized_list2 = tweet_token(tweet_text_list2)
+
+    dif_word_fq1, dif_word_fq2 = find_dif_freqDist(tokenized_list1, tokenized_list2)
+
+    common_word_fq1, common_word_fq2 = find_common_freqDist(tokenized_list1, tokenized_list2)
+    
+    print("the 5 most frequent different words for {} is:".format(username1))
+    print(dif_word_fq1.most_common(5))
+    print("the 5 most frequent different words for {} is:".format(username2))
+    print(dif_word_fq2.most_common(5))
+    print("the 5 most frequent common words for {} is:".format(username1))
+    print(common_word_fq1.most_common(5))
+    print("the 5 most frequent common words for {} is:".format(username2))
+    print(common_word_fq2.most_common(5))
     print('-----------------------------------------')
